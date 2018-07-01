@@ -1,1 +1,9 @@
 social-netword-spark init
+
+install google-cloud-sdk
+
+set auth pubsub
+https://cloud.google.com/pubsub/docs/reference/libraries?hl=fr#client-libraries-install-java
+
+gcloud init
+europe-west1-b

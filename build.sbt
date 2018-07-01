@@ -12,7 +12,8 @@ lazy val deploy = (project in file("."))
     //mainClass in Compile := Some("Deploy")
     libraryDependencies ++= Seq(
       "org.apache.spark" %% "spark-core" % "2.1.0" % "provided",
-      "joda-time" % "joda-time" % "2.9.9"
+      "joda-time" % "joda-time" % "2.9.9",
+      "com.google.cloud" % "google-cloud-pubsub" % "1.31.0"
     )
   )
 

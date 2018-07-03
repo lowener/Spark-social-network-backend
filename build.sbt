@@ -4,18 +4,30 @@ version := "0.1"
 
 scalaVersion := "2.11.8"
 
-lazy val deploy = (project in file("."))
+//lazy val backend = (project in file("backend"))
+//  .settings(settings)
+//  .settings(project_settings)
+//  .settings(
+//    assemblySettings,
+//    name := "sender"
+//    //mainClass in Compile := Some("Sender")
+//  )
+
+//lazy val root = (project in file(".")).dependsOn(messenger).aggregate(messenger)
+libraryDependencies ++= Seq(
+  "org.apache.spark" %% "spark-core" % "2.1.0" % "provided",
+  "joda-time" % "joda-time" % "2.9.9",
+  "com.google.cloud" % "google-cloud-pubsub" % "1.31.0"
+)
+
+lazy val messenger = (project in file("messenger"))
   .settings(settings)
   .settings(
     assemblySettings,
-    name := "deploy",
-    //mainClass in Compile := Some("Deploy")
-    libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-core" % "2.1.0" % "provided",
-      "joda-time" % "joda-time" % "2.9.9",
-      "com.google.cloud" % "google-cloud-pubsub" % "1.31.0"
-    )
+    name := "sender",
+    mainClass in Compile := Some("Sender")
   )
+
 
 lazy val assemblySettings = Seq(
   assemblyJarName in assembly := name.value + ".jar",
@@ -45,6 +57,8 @@ lazy val compilerOptions = Seq(
 lazy val commonSettings = Seq(
   scalacOptions ++= compilerOptions,
   resolvers ++= Seq(
+    "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+    "Confluent" at "http://packages.confluent.io/maven/",
     "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
     Resolver.sonatypeRepo("releases"),
     Resolver.sonatypeRepo("snapshots")

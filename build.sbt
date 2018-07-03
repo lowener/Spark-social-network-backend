@@ -14,18 +14,35 @@ scalaVersion := "2.11.8"
 //  )
 
 //lazy val root = (project in file(".")).dependsOn(messenger).aggregate(messenger)
+//resolvers ++= Seq(
+//  "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+//  "Confluent" at "http://packages.confluent.io/maven/",
+//  "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
+//  Resolver.sonatypeRepo("releases"),
+//  Resolver.sonatypeRepo("snapshots")
+//)
+
+//libraryDependencies ++= Seq(
+//  "org.apache.spark" % "spark-core_2.11" % "2.1.0",
+//  "joda-time" % "joda-time" % "2.9.9",
+//  "com.google.cloud" % "google-cloud-pubsub" % "1.31.0"
+//)
+
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % "2.1.0" % "provided",
-  "joda-time" % "joda-time" % "2.9.9",
-  "com.google.cloud" % "google-cloud-pubsub" % "1.31.0"
+  "org.scalatest" % "scalatest_2.11" % "2.2.5",
 )
 
 lazy val messenger = (project in file("messenger"))
   .settings(settings)
   .settings(
+    libraryDependencies ++= Seq(
+      "org.apache.spark" % "spark-core_2.11" % "2.3.0",
+      "joda-time" % "joda-time" % "2.9.9",
+      "com.google.cloud" % "google-cloud-pubsub" % "1.31.0"
+    ),
     assemblySettings,
     name := "sender",
-    mainClass in Compile := Some("Sender")
+    mainClass in Compile := Some("socialMedia.messager.Sender")
   )
 
 

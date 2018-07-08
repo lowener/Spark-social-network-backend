@@ -120,7 +120,7 @@ object MyProducer extends App {
       val post = new Post(randomString(15), randomString(6))
       pubItem(post)
     }
-    if (args(0).equals("sub")) {
+    if (args(0).equals("search")) {
       val occurencesPost = Occurences(args(1).toLowerCase, "sub-get-post")
       val occurencesMessage = Occurences(args(1).toLowerCase, "sub-get-message")
       //println(s"${args(1)} appears ${occurencesMessage + occurencesPost} times")

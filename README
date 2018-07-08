@@ -1,9 +1,13 @@
 social-netword-spark init
 
+set your GCP services and API
+
 install google-cloud-sdk
-
-set auth pubsub
-https://cloud.google.com/pubsub/docs/reference/libraries?hl=fr#client-libraries-install-java
-
 gcloud init
-europe-west1-b
+export GOOGLE_APPLICATION_CREDENTIALS=[credenceFile].json
+
+$ sbt "run publish"
+push random items on GCP PubSub and add them to GCS
+
+$ sbt "search [WORD]"
+find nb of occurencies in GCS [not working well]

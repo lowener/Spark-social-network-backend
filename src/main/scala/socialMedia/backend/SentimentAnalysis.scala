@@ -19,6 +19,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.ml.feature.{HashingTF, IDF, Tokenizer, VectorAssembler, LabeledPoint}
 import org.apache.spark.ml.classification.{NaiveBayes, NaiveBayesModel}
 import org.apache.spark.ml.linalg._
+import org.apache.spark.ml.PipelineModel
 import scala.reflect.runtime.universe._
 
 object SentimentAnalysis {
@@ -28,6 +29,9 @@ object SentimentAnalysis {
    Logger.getLogger("org").setLevel(Level.OFF)
    Logger.getLogger("akka").setLevel(Level.OFF)
 
+   val sc = SparkSession.builder.appName("SentimentAnalysis").master("local[*]").getOrCreate()
+   val sparkCtxt = sc.sparkContext
+   import sc.implicits._
 
    def sanitizeString(text: String, stopWordsList: List[String]) : String = {
       text.toLowerCase()
@@ -46,14 +50,8 @@ object SentimentAnalysis {
          .filter(!stopWordsList.contains(_))
          .mkString
    }
-   def main(args: Array[String]) {
-      /*val conf = new SparkConf().setAppName("SentimentAnalysis").setMaster("local[*]")
-      val sc = SparkContext.getOrCreate(conf)
-      */
-      val sc = SparkSession.builder.appName("SentimentAnalysis").master("local[*]").getOrCreate()
-      val sparkCtxt = sc.sparkContext
-      import sc.implicits._
-      //val data = sparkSession.read.text("src/main/resources/data.txt").as[String]
+
+   def train() : NaiveBayesModel = {
       val stopwords = sc.read.text("nltk_stopwords.txt").as[String].flatMap(_.split('\n')).collect.toList
       val tweetsDF : DataFrame = sc.read
                      .format("com.databricks.spark.csv")
@@ -76,10 +74,34 @@ object SentimentAnalysis {
          case e => LabeledPoint(e(0).asInstanceOf[Double], e(1).asInstanceOf[Vector])
       }
       val model : NaiveBayesModel = new NaiveBayes().fit(featurizedData.toDF)
-      model.save("naiveBayes.model")
+      try {
+         model.write.overwrite.save("/tmp/naiveBayes-model")
+      } catch {
+        case e: Exception => println(e)
+      }
+      model
+   }
 
-      featurizedData.foreach(println)
-      /*val naiveBayesModel: NaiveBayesModel = NaiveBayes.train(labelledRDD, lambda = 1.0, modelType = "multinomial")
-      naiveBayesModel.save(sc.sparkContext, "naiveBayes.model")*/
+   def testModel(texts: Array[String]) = {
+      /*val newNames = Seq("features")
+      val dataText = texts.toList.toDF(newNames: _*)*/
+      //val model = NaiveBayesModel.load("naiveBayes.model")
+      val model = train()
+      //val model = PipelineModel.read.load("file:/tmp/naiveBayes-model")
+      val tokenizer = new Tokenizer().setInputCol("value").setOutputCol("words")
+      val hashingTF = new HashingTF().setInputCol("words").setOutputCol("features")
+      val wordsData = tokenizer.transform(texts.toList.toDF())
+      val featurizedData = hashingTF.transform(wordsData).select($"features")
+      val predictions = model.transform(featurizedData)
+      predictions.show()
+      predictions
+   }
+
+   def main(args: Array[String]) {
+
+      if (args.size == 0)
+         train()
+      else
+         testModel(args)
    }
 }

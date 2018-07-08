@@ -12,7 +12,7 @@ libraryDependencies ++= Seq(
   "joda-time" % "joda-time" % "2.9.9",
   "com.google.cloud" % "google-cloud-pubsub" % "1.31.0",
   "com.google.apis" % "google-api-services-pubsub" % "v1-rev355-1.22.0",
-  "org.apache.bahir" % "spark-streaming-pubsub_2.11" % "2.1.1"
+  "org.apache.bahir" % "spark-streaming-pubsub_2.11" % "2.2.1"
 )
 resolvers ++= Seq(
   "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",

@@ -8,6 +8,8 @@ scalaVersion := "2.11.11"
 libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "2.2.5",
   "org.apache.spark" % "spark-core_2.11" % "2.3.0",
+  "org.apache.spark" % "spark-sql_2.11" % "2.3.0",
+  "org.apache.spark" % "spark-mllib_2.11" % "2.3.0",
   "org.apache.spark" % "spark-streaming_2.11" % "2.3.0",
   "joda-time" % "joda-time" % "2.9.9",
   "com.google.cloud" % "google-cloud-pubsub" % "1.31.0",
@@ -22,7 +24,7 @@ resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 )
-mainClass in run := Some("socialMedia.backend.MyProducer")
+mainClass in run := Some("socialMedia.backend.SentimentAnalysis")
 
 //lazy val mess = (project in file("produc"))
 //  .settings(settings)

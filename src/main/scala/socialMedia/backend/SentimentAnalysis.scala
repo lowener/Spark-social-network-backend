@@ -75,7 +75,7 @@ object SentimentAnalysis {
       }
       val model : NaiveBayesModel = new NaiveBayes().fit(featurizedData.toDF)
       try {
-         model.write.overwrite.save("/tmp/naiveBayes-model")
+         model.write.overwrite.save("naiveBayes-model")
       } catch {
         case e: Exception => println(e)
       }

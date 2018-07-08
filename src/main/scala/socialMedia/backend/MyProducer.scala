@@ -77,14 +77,8 @@ object MyProducer extends App {
       .execute()
     println(s"Published data. topic: ${listItem.head.getTopic}; Message: $publishRequest")
   }
-<<<<<<< HEAD
 
   def randomString(length: Int): String = Random.alphanumeric.take(length).mkString
-=======
-/*
-  def pipeline : Unit = {
-    //val Seq(projectId, subscription) = args.toSeq
->>>>>>> Started spark-ml
 
   def Occurences(word: String, subscription: String) = {
     val projectId = ServiceOptions.getDefaultProjectId
@@ -116,7 +110,6 @@ object MyProducer extends App {
 
 
   override def main(args: Array[String]): Unit = {
-<<<<<<< HEAD
     if (args(0).equals("publish")) {
       val postLeno = new Post("les pc de apple sont tres tres mauvais", "Arthur")
       pubItem(postLeno)
@@ -135,8 +128,4 @@ object MyProducer extends App {
       occurencesPost.print()
     }
   }
-=======
-
-  }*/
->>>>>>> Started spark-ml
 }

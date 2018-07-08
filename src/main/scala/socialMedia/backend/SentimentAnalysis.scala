@@ -16,38 +16,20 @@ import org.apache.spark.SparkConf
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
 import org.apache.spark.sql.types._
-import org.apache.spark.ml.feature.{HashingTF, IDF, Tokenizer, VectorAssembler}
-import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.mllib.classification.NaiveBayesModel
-import org.apache.spark.mllib.linalg._
-
-object Utils {
-   // FIXME: Use a sparkContext
-   def asarray(s: Seq[String]) : Array[String] = {
-      s.toArray
-   }
-
-   def asdf(s: Seq[String]) : DataFrame = {
-      try {
-         val sc = SparkSession.builder.appName("SentimentAnalysis").master("local[*]").getOrCreate()
-         val sparkCtxt = sc.sparkContext
-         import sc.implicits._
-         s.toDF
-      } catch {
-        case e: Exception => DataFrame()
-      }
-
-   }
-}
+import org.apache.spark.ml.feature.{HashingTF, IDF, Tokenizer, VectorAssembler, LabeledPoint}
+import org.apache.spark.ml.classification.{NaiveBayes, NaiveBayesModel}
+import org.apache.spark.ml.linalg._
+import scala.reflect.runtime.universe._
 
 object SentimentAnalysis {
+   def getType[T: TypeTag](value: T) = typeOf[T]
    /*import SparkSession.implicits._
       import spark.implicits._*/
    Logger.getLogger("org").setLevel(Level.OFF)
    Logger.getLogger("akka").setLevel(Level.OFF)
 
 
-   def sanitizeString(text: String, stopWordsList: List[String]) : Seq[String] = {
+   def sanitizeString(text: String, stopWordsList: List[String]) : String = {
       text.toLowerCase()
          .replaceAll("\n", "")
          .replaceAll("rt\\s+", "")
@@ -62,6 +44,7 @@ object SentimentAnalysis {
          .split("\\W+")
          .filter(_.matches("^[a-zA-Z]+$"))
          .filter(!stopWordsList.contains(_))
+         .mkString
    }
    def main(args: Array[String]) {
       /*val conf = new SparkConf().setAppName("SentimentAnalysis").setMaster("local[*]")
@@ -83,37 +66,19 @@ object SentimentAnalysis {
                      .drop("query")
                      .drop("user")
 
-      val hashingTF = new HashingTF().setOutputCol("rawFeatures")
+      val hashingTF = new HashingTF().setInputCol("words").setOutputCol("rawFeatures")
 
-      val labelledRDD = tweetsDF.select("label", "text").rdd.map {
-         case Row(label: Int, text: String) => {
-            val simplerText = text.replaceAll("\n", "")
-            val textSanitized : Seq[String] = sanitizeString(simplerText, stopwords)
-            println(textSanitized)
-            val myArr : Array[String] = Utils.asarray(textSanitized)
-            //println(Vectors.dense(textSanitized.toArray))
-
-
-            //val hashedTF : DataFrame = hashingTF.transform((textSanitized))
-            //println(hashedTF.collect.toArray.size)
-            val myArr2 = hashedTF.collect.map(_.size)
-            try {
-              // ...
-              println(myArr2.size)
-            } catch {
-              case e: Exception =>
-            }
-            myArr2
-            // ->val vecFeatures: Vector = Vectors.dense()
-            //val vecFeatures: Vector = new VectorAssembler().transform(hashedTF)
-            // ->LabeledPoint(label, vecFeatures)
-            /*val hashedTF = hashingTF.transform(textSanitized)
-            (score.toDouble,
-             model.predict(hashedTF),
-             simplerText)*/
-         }
+      val tokenizer = new Tokenizer().setInputCol("text").setOutputCol("words")
+      val wordsData = tokenizer.transform(tweetsDF)
+      val featurizedData = hashingTF.transform(wordsData).select($"label", $"rawFeatures").rdd.map{
+         case Row(label: Int, feats: Vector) =>
+            LabeledPoint(label, feats)
+         case e => LabeledPoint(e(0).asInstanceOf[Double], e(1).asInstanceOf[Vector])
       }
-      labelledRDD.foreach(println)
+      val model : NaiveBayesModel = new NaiveBayes().fit(featurizedData.toDF)
+      model.save("naiveBayes.model")
+
+      featurizedData.foreach(println)
       /*val naiveBayesModel: NaiveBayesModel = NaiveBayes.train(labelledRDD, lambda = 1.0, modelType = "multinomial")
       naiveBayesModel.save(sc.sparkContext, "naiveBayes.model")*/
    }
